@@ -12,8 +12,7 @@ public class MarketData {
 
     public MarketData(String source, String instrument, List<MessagePriceLevel> buyMessagePriceLevelList,
                       List<MessagePriceLevel> sellMessagePriceLevelList) {
-        //verify if buy contains correct msg? Maybe make a mode DR site and all
-        //verify is source is among LP1 to LP 100 . Will take O(n) time
+        //verify is source is among LP1 to LP 100 . Will take O(n) time to search. Use map.
         this.source = source;
         this.instrument = instrument;
         this.buyMessagePriceLevelList = new ArrayList<>(buyMessagePriceLevelList);
@@ -29,11 +28,11 @@ public class MarketData {
     }
 
     public List<MessagePriceLevel> getBuyMessagePriceLevelList() {
-        return Collections.unmodifiableList(buyMessagePriceLevelList);
+        return buyMessagePriceLevelList;
     }
 
     public List<MessagePriceLevel> getSellMessagePriceLevelList() {
-        return Collections.unmodifiableList(sellMessagePriceLevelList);
+        return sellMessagePriceLevelList;
     }
 
 

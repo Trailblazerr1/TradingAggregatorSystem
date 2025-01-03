@@ -17,13 +17,15 @@ public class TradingAggregatorSystem {
 
     public static void main(String[] args) throws InvalidMarketDataException {
         LOGGER.info("Trading Aggregator System started");
-        MessagePriceLevel messagePriceLevelBuy = new MessagePriceLevel(MarketSide.BUY,new BigDecimal(80),10);
-        MessagePriceLevel messagePriceLevelSell = new MessagePriceLevel(MarketSide.SELL,new BigDecimal(80),10);
-        MarketData marketData = new MarketData("LP1","USDINR",List.of(messagePriceLevelBuy), List.of(messagePriceLevelBuy));
+        MessagePriceLevel messagePriceLevelBuy = new MessagePriceLevel(MarketSide.BUY,new BigDecimal(82.1500),1000000);
+        MessagePriceLevel messagePriceLevelSell = new MessagePriceLevel(MarketSide.SELL,new BigDecimal(82.1800),5000000);
+        MarketData marketData = new MarketData("LP1","USDINR",List.of(messagePriceLevelBuy), List.of(messagePriceLevelSell));
         PriceBook priceBookUSDINR = new PriceBook("USDINR");
         priceBookUSDINR.update(marketData);
+
         PriceBookUtility priceBookUtility = new PriceBookUtility(priceBookUSDINR);
-        LOGGER.info("Val of totalQuant "+ priceBookUtility.getTotalQuantityForPriceAndSide(new BigDecimal(80),MarketSide.BUY));
-        LOGGER.info("Val of vwap " + priceBookUtility.getVwapForQuantityAndSide(10L,MarketSide.BUY));
+        LOGGER.info("Val of totalQuantity "+ priceBookUtility.getTotalQuantityForPriceAndSide(new BigDecimal(82.1500),MarketSide.BUY));
+        LOGGER.info("Val of vwap " + priceBookUtility.getVwapForQuantityAndSide(5000000L,MarketSide.SELL).setScale(4, BigDecimal.ROUND_HALF_UP));
+        priceBookUSDINR.reset();
     }
 }

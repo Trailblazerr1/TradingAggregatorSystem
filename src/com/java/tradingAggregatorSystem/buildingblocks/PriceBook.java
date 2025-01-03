@@ -71,7 +71,7 @@ public class PriceBook {
 
 
     private void addNewPriceLevelData(String source, List<MessagePriceLevel> messagePriceLevelList, MarketSide marketSide,
-                                      Map<String, Set<CustomPriceLevel>> lpToPriceLevel, Set<CustomPriceLevel> priceLevelSet, Map<BigDecimal, Long> priceToTotalQuantity) {
+                                      Map<String, Set<CustomPriceLevel>> lpToPriceLevel, Set<CustomPriceLevel> priceLevelSet, Map<BigDecimal, Long> priceToTotalQuantity) throws InvalidMarketDataException {
         for(MessagePriceLevel messagePriceLevel : messagePriceLevelList) {
             BigDecimal currentOrderMessagePrice = messagePriceLevel.getPrice();
             CustomPriceLevel priceLevel = new CustomPriceLevel(marketSide,currentOrderMessagePrice, messagePriceLevel.getQuantity(),source);
@@ -116,14 +116,26 @@ public class PriceBook {
 
     public Set<CustomPriceLevel> getSellCPriceLevelSet() {
         Set<CustomPriceLevel> copyOfSellPriceLevelSet = sellCPriceLevelSet.stream()
-                .map(pL -> new CustomPriceLevel(pL.getSide(),pL.getPrice(),pL.getQuantity(),pL.getLpName()))
+                .map(pL -> {
+                    try {
+                        return new CustomPriceLevel(pL.getSide(),pL.getPrice(),pL.getQuantity(),pL.getLpName());
+                    } catch (InvalidMarketDataException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .collect(Collectors.toCollection(() -> new TreeSet<>(new SellComparator())));
         return copyOfSellPriceLevelSet;
     }
 
     public Set<CustomPriceLevel> getBuyCPriceLevelSet() {
         Set<CustomPriceLevel> copyOfBuyPriceLevelSet = buyCPriceLevelSet.stream()
-                .map(pL -> new CustomPriceLevel(pL.getSide(),pL.getPrice(),pL.getQuantity(),pL.getLpName()))
+                .map(pL -> {
+                    try {
+                        return new CustomPriceLevel(pL.getSide(),pL.getPrice(),pL.getQuantity(),pL.getLpName());
+                    } catch (InvalidMarketDataException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .collect(Collectors.toCollection(() -> new TreeSet<>(new BuyComparator())));
         return copyOfBuyPriceLevelSet;
     }
