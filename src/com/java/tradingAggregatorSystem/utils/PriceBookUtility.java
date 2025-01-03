@@ -2,7 +2,7 @@ package com.java.tradingAggregatorSystem.utils;
 
 import com.java.tradingAggregatorSystem.buildingblocks.MarketSide;
 import com.java.tradingAggregatorSystem.buildingblocks.PriceBook;
-import com.java.tradingAggregatorSystem.buildingblocks.PriceLevel;
+import com.java.tradingAggregatorSystem.buildingblocks.CustomPriceLevel;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,7 +18,7 @@ public class PriceBookUtility {
     }
 
     public Long getTotalQuantityForPriceAndSide(BigDecimal price, MarketSide side) {
-        if(price.compareTo(BigDecimal.valueOf(0)) <= 0)
+        if(price.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Invalid price given in parameter");
         if(side == MarketSide.BUY)
             return priceBook.getBidPriceToTotalQuantity().getOrDefault(price,0L);
@@ -29,14 +29,13 @@ public class PriceBookUtility {
     }
 
     public BigDecimal getVwapForQuantityAndSide(Long quantity, MarketSide side) {
-        Set<PriceLevel> priceLevelSet = side == MarketSide.BUY ? priceBook.getBuyPriceLevelSet():
-                priceBook.getSellPriceLevelSet();
+        Set<CustomPriceLevel> priceLevelSet = side == MarketSide.BUY ? priceBook.getBuyCPriceLevelSet():
+                priceBook.getSellCPriceLevelSet();
         long remainingQuantity =  quantity;
         BigDecimal weightedSum = BigDecimal.ZERO;
         long currentQuantity = 0L;
 
-        for(PriceLevel priceLevel : priceLevelSet) {
-//            long priceLevelQuantity = priceLevel.getQuantity();
+        for(CustomPriceLevel priceLevel : priceLevelSet) {
             long quantityToUse = Math.min(priceLevel.getQuantity(),remainingQuantity);
             if(quantityToUse <=0 ) break;
             weightedSum = weightedSum.add(
@@ -45,8 +44,7 @@ public class PriceBookUtility {
             remainingQuantity-= quantityToUse;
         }
         if(currentQuantity < quantity)
-            throw new IllegalArgumentException("Illiquid quantity");
-        //make rounding mode configurable
+            throw new IllegalArgumentException("Illiquid quantity provided in parameter");
         return weightedSum.divide(BigDecimal.valueOf(currentQuantity), RoundingMode.HALF_UP);
 
     }

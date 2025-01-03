@@ -1,21 +1,23 @@
 package com.java.tradingAggregatorSystem.buildingblocks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MarketData {
     private final String source;
     private final String instrument;
-    private List<OrderMessage> buyOrderMessageList;
-    private List<OrderMessage> sellOrderMessageList;
+    private final List<MessagePriceLevel> buyMessagePriceLevelList;
+    private final List<MessagePriceLevel> sellMessagePriceLevelList;
 
-    public MarketData(String source, String instrument, List<OrderMessage> buyOrderMessageList,
-                      List<OrderMessage> sellOrderMessageList) {
+    public MarketData(String source, String instrument, List<MessagePriceLevel> buyMessagePriceLevelList,
+                      List<MessagePriceLevel> sellMessagePriceLevelList) {
+        //verify if buy contains correct msg? Maybe make a mode DR site and all
+        //verify is source is among LP1 to LP 100 . Will take O(n) time
         this.source = source;
         this.instrument = instrument;
-        //verify if buy contains correct msg? Maybe make a mode DR site and all
-        this.buyOrderMessageList = new ArrayList<>(buyOrderMessageList);
-        this.sellOrderMessageList = new ArrayList<>(sellOrderMessageList);
+        this.buyMessagePriceLevelList = new ArrayList<>(buyMessagePriceLevelList);
+        this.sellMessagePriceLevelList = new ArrayList<>(sellMessagePriceLevelList);
     }
 
     public String getSource() {
@@ -26,22 +28,14 @@ public class MarketData {
         return instrument;
     }
 
-    public List<OrderMessage> getBuyOrderMessageList() {
-//        return Collections.unmodifiableList(buyOrderMessageList);
-        return buyOrderMessageList;
+    public List<MessagePriceLevel> getBuyMessagePriceLevelList() {
+        return Collections.unmodifiableList(buyMessagePriceLevelList);
     }
 
-    public void setBuyOrderMessageList(List<OrderMessage> buyOrderMessageList) {
-        this.buyOrderMessageList = buyOrderMessageList;
+    public List<MessagePriceLevel> getSellMessagePriceLevelList() {
+        return Collections.unmodifiableList(sellMessagePriceLevelList);
     }
 
-    public List<OrderMessage> getSellOrderMessageList() {
-        return sellOrderMessageList;
-    }
-
-    public void setSellOrderMessageList(List<OrderMessage> sellOrderMessageList) {
-        this.sellOrderMessageList = sellOrderMessageList;
-    }
 
 
 }

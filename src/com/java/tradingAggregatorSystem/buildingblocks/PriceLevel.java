@@ -1,33 +1,30 @@
 package com.java.tradingAggregatorSystem.buildingblocks;
 
+import com.java.tradingAggregatorSystem.exceptions.InvalidMarketDataException;
+
 import java.math.BigDecimal;
 
-public class PriceLevel {
-    private final MarketSide side;
+public abstract class PriceLevel {
     private final BigDecimal price;
     private final long quantity;
-    private final String lpName;
 
-    public PriceLevel(MarketSide side, BigDecimal price, long quantity, String lpName) {
-        this.side = side;
-        this.price = price;
-        this.quantity = quantity;
-        this.lpName = lpName;
-    }
+    public PriceLevel(BigDecimal price, long quantity) throws InvalidMarketDataException {
+        if(price.compareTo(BigDecimal.ZERO) >= 0)
+            this.price = price;
+        else
+            throw new InvalidMarketDataException("Invalid price found in Market Data");
 
-    public MarketSide getSide() {
-        return side;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
+        if(quantity >= 0)
+            this.quantity = quantity;
+        else
+            throw new InvalidMarketDataException("Invalid quantity found in Market Data");
     }
 
     public long getQuantity() {
         return quantity;
     }
 
-    public String getLpName() {
-        return lpName;
+    public BigDecimal getPrice() {
+        return price;
     }
 }
