@@ -1,12 +1,16 @@
-package com.java.tradingAggregatorSystem;
+package com.java.tradingAggregatorSystem.utils;
 
-import com.java.tradingAggregatorSystem.constants.MarketSide;
+import com.java.tradingAggregatorSystem.buildingblocks.MarketSide;
+import com.java.tradingAggregatorSystem.buildingblocks.PriceBook;
+import com.java.tradingAggregatorSystem.buildingblocks.PriceLevel;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class PriceBookUtility {
+    private static Logger LOGGER = Logger.getLogger(PriceBookUtility.class.getName());
     PriceBook priceBook;
 
     public PriceBookUtility(PriceBook priceBook) {

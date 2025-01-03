@@ -1,4 +1,4 @@
-package com.java.tradingAggregatorSystem;
+package com.java.tradingAggregatorSystem.buildingblocks;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,18 +1,18 @@
-package com.java.tradingAggregatorSystem;
-
-import com.java.tradingAggregatorSystem.constants.MarketSide;
+package com.java.tradingAggregatorSystem.buildingblocks;
 
 import java.math.BigDecimal;
 
-public class OrderMessage {
+public class PriceLevel {
     private final MarketSide side;
     private final BigDecimal price;
     private final long quantity;
+    private final String lpName;
 
-    public OrderMessage(MarketSide side, BigDecimal price, long quantity) {
+    public PriceLevel(MarketSide side, BigDecimal price, long quantity, String lpName) {
         this.side = side;
         this.price = price;
         this.quantity = quantity;
+        this.lpName = lpName;
     }
 
     public MarketSide getSide() {
@@ -25,5 +25,9 @@ public class OrderMessage {
 
     public long getQuantity() {
         return quantity;
+    }
+
+    public String getLpName() {
+        return lpName;
     }
 }

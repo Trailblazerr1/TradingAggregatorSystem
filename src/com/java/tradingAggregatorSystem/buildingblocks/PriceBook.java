@@ -1,14 +1,18 @@
-package com.java.tradingAggregatorSystem;
+package com.java.tradingAggregatorSystem.buildingblocks;
 
 import com.java.tradingAggregatorSystem.comparators.BuyComparator;
 import com.java.tradingAggregatorSystem.comparators.SellComparator;
-import com.java.tradingAggregatorSystem.constants.MarketSide;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PriceBook {
+    private static Logger LOGGER = Logger.getLogger(PriceBook.class.getName());
+
+    private String priceBookInstruement;
     private Set<PriceLevel> buyPriceLevelSet;
     private Set<PriceLevel> sellPriceLevelSet ;
     private Map<String,Set<PriceLevel>> lpToBids;
@@ -16,34 +20,49 @@ public class PriceBook {
     private Map<BigDecimal,Long> bidPriceToTotalQuantity;
     private Map<BigDecimal,Long> offerPriceToTotalQuantity;
 
-    public PriceBook() {
-        buyPriceLevelSet = new TreeSet<>(new BuyComparator());
-        sellPriceLevelSet = new TreeSet<>(new SellComparator());
+    ReentrantLock lock;
+
+    public PriceBook(String priceBookInstruement) {
+        this.priceBookInstruement = priceBookInstruement;
+        this.buyPriceLevelSet = new TreeSet<>(new BuyComparator());
+        this.sellPriceLevelSet = new TreeSet<>(new SellComparator());
         this.lpToBids = new HashMap<>();
         this.lpToOffers = new HashMap<>();
-        bidPriceToTotalQuantity = new HashMap<>();
-        offerPriceToTotalQuantity = new HashMap<>();
+        this.bidPriceToTotalQuantity = new HashMap<>();
+        this.offerPriceToTotalQuantity = new HashMap<>();
+
+        this.lock = new ReentrantLock();
     }
 
     public void reset() {
-        //reset everything
-        buyPriceLevelSet.clear();
-        sellPriceLevelSet.clear();
-        lpToBids.clear();
-        lpToOffers.clear();
-        bidPriceToTotalQuantity.clear();
-        offerPriceToTotalQuantity.clear();
+        try {
+            lock.lock();
+            //reset everything
+            buyPriceLevelSet.clear();
+            sellPriceLevelSet.clear();
+            lpToBids.clear();
+            lpToOffers.clear();
+            bidPriceToTotalQuantity.clear();
+            offerPriceToTotalQuantity.clear();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void update(MarketData marketData) {
-        //reset bids and Offers of marketData.getSource()
-        removePreviousPriceLevelDataOfLP(marketData,lpToBids, buyPriceLevelSet, bidPriceToTotalQuantity);
-        removePreviousPriceLevelDataOfLP(marketData,lpToOffers, sellPriceLevelSet, offerPriceToTotalQuantity);
-        //add new data
-        addNewPriceLevelData(marketData.getSource(),marketData.getBuyOrderMessageList(), MarketSide.BUY,
-                lpToBids, buyPriceLevelSet, bidPriceToTotalQuantity);
-        addNewPriceLevelData(marketData.getSource(),marketData.getSellOrderMessageList() , MarketSide.SELL,
-                lpToOffers, sellPriceLevelSet, offerPriceToTotalQuantity);
+        try {
+            lock.lock();
+            //reset bids and Offers of marketData.getSource()
+            removePreviousPriceLevelDataOfLP(marketData, lpToBids, buyPriceLevelSet, bidPriceToTotalQuantity);
+            removePreviousPriceLevelDataOfLP(marketData, lpToOffers, sellPriceLevelSet, offerPriceToTotalQuantity);
+            //add new data
+            addNewPriceLevelData(marketData.getSource(), marketData.getBuyOrderMessageList(), MarketSide.BUY,
+                    lpToBids, buyPriceLevelSet, bidPriceToTotalQuantity);
+            addNewPriceLevelData(marketData.getSource(), marketData.getSellOrderMessageList(), MarketSide.SELL,
+                    lpToOffers, sellPriceLevelSet, offerPriceToTotalQuantity);
+        } finally {
+            lock.unlock();
+        }
     }
 
 
@@ -79,6 +98,7 @@ public class PriceBook {
                 priceToTotalQuantity.remove(currentDataPointPrice);
         }
     }
+
 
     public Map<BigDecimal, Long> getBidPriceToTotalQuantity() {
         return bidPriceToTotalQuantity;

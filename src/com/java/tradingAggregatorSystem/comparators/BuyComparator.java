@@ -1,6 +1,6 @@
 package com.java.tradingAggregatorSystem.comparators;
 
-import com.java.tradingAggregatorSystem.PriceLevel;
+import com.java.tradingAggregatorSystem.buildingblocks.PriceLevel;
 
 import java.util.Comparator;
 
