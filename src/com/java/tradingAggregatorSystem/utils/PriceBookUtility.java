@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class PriceBookUtility {
-    private static Logger LOGGER = Logger.getLogger(PriceBookUtility.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PriceBookUtility.class.getName());
     PriceBook priceBook;
 
     public PriceBookUtility(PriceBook priceBook) {

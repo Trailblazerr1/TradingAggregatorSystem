@@ -6,9 +6,8 @@ import com.java.tradingAggregatorSystem.exceptions.InvalidMarketDataException;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class PriceBook {
     private static Logger LOGGER = Logger.getLogger(PriceBook.class.getName());
@@ -21,7 +20,7 @@ public class PriceBook {
     private Map<BigDecimal,Long> bidPriceToTotalQuantity;
     private Map<BigDecimal,Long> offerPriceToTotalQuantity;
 
-    ReentrantLock lock;
+    private final ReentrantReadWriteLock lock;
     //To support other insturments, we can have a PriceBookFactory to generate singleton
     //classes
     public PriceBook(String priceBookInstruement) {
@@ -33,12 +32,12 @@ public class PriceBook {
         this.bidPriceToTotalQuantity = new HashMap<>();
         this.offerPriceToTotalQuantity = new HashMap<>();
 
-        this.lock = new ReentrantLock();
+        this.lock = new ReentrantReadWriteLock();
     }
 
     public void reset() {
         try {
-            lock.lock();
+            lock.writeLock().lock();
             buyCPriceLevelSet.clear();
             sellCPriceLevelSet.clear();
             lpToBids.clear();
@@ -47,13 +46,13 @@ public class PriceBook {
             offerPriceToTotalQuantity.clear();
             LOGGER.info("PriceBook data reset");
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 
     public void update(MarketData marketData) throws InvalidMarketDataException {
         try {
-            lock.lock();
+            lock.writeLock().lock();
             if(!marketData.getInstrument().equals(priceBookInstruement)) {
                 throw new InvalidMarketDataException("Invalid Instrument found in Market Data");
             }
@@ -65,7 +64,7 @@ public class PriceBook {
             addNewPriceLevelData(marketData.getSource(), marketData.getSellMessagePriceLevelList(), MarketSide.SELL,
                     lpToOffers, sellCPriceLevelSet, offerPriceToTotalQuantity);
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -107,36 +106,42 @@ public class PriceBook {
 
 
     public Map<BigDecimal, Long> getBidPriceToTotalQuantity() {
-        return bidPriceToTotalQuantity;
+        try {
+            lock.readLock().lock();
+            return new HashMap<>(bidPriceToTotalQuantity);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public Map<BigDecimal, Long> getOfferPriceToTotalQuantity() {
-        return offerPriceToTotalQuantity;
+        try {
+            lock.readLock().lock();
+            return new HashMap<>(offerPriceToTotalQuantity);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public Set<CustomPriceLevel> getSellCPriceLevelSet() {
-        Set<CustomPriceLevel> copyOfSellPriceLevelSet = sellCPriceLevelSet.stream()
-                .map(pL -> {
-                    try {
-                        return new CustomPriceLevel(pL.getSide(),pL.getPrice(),pL.getQuantity(),pL.getLpName());
-                    } catch (InvalidMarketDataException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toCollection(() -> new TreeSet<>(new SellComparator())));
-        return copyOfSellPriceLevelSet;
+        try {
+            lock.readLock().lock();
+            TreeSet<CustomPriceLevel> sellCPriceLevelSetCopy = new TreeSet<>(new BuyComparator());
+            sellCPriceLevelSetCopy.addAll(sellCPriceLevelSet);
+            return Collections.unmodifiableSet(sellCPriceLevelSetCopy);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public Set<CustomPriceLevel> getBuyCPriceLevelSet() {
-        Set<CustomPriceLevel> copyOfBuyPriceLevelSet = buyCPriceLevelSet.stream()
-                .map(pL -> {
-                    try {
-                        return new CustomPriceLevel(pL.getSide(),pL.getPrice(),pL.getQuantity(),pL.getLpName());
-                    } catch (InvalidMarketDataException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toCollection(() -> new TreeSet<>(new BuyComparator())));
-        return copyOfBuyPriceLevelSet;
+        try {
+            lock.readLock().lock();
+            TreeSet<CustomPriceLevel> buyCPriceLevelSetCopy = new TreeSet<>(new SellComparator());
+            buyCPriceLevelSetCopy.addAll(buyCPriceLevelSet);
+            return Collections.unmodifiableSet(buyCPriceLevelSetCopy);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 }

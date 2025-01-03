@@ -9,11 +9,10 @@ import com.java.tradingAggregatorSystem.utils.PriceBookUtility;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TradingAggregatorSystem {
-    private static Logger LOGGER = Logger.getLogger(TradingAggregatorSystem.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TradingAggregatorSystem.class.getName());
 
     public static void main(String[] args) throws InvalidMarketDataException {
         LOGGER.info("Trading Aggregator System started");
@@ -24,8 +23,8 @@ public class TradingAggregatorSystem {
         priceBookUSDINR.update(marketData);
 
         PriceBookUtility priceBookUtility = new PriceBookUtility(priceBookUSDINR);
-        LOGGER.info("Val of totalQuantity "+ priceBookUtility.getTotalQuantityForPriceAndSide(new BigDecimal(82.1500),MarketSide.BUY));
-        LOGGER.info("Val of vwap " + priceBookUtility.getVwapForQuantityAndSide(5000000L,MarketSide.SELL).setScale(4, BigDecimal.ROUND_HALF_UP));
+        LOGGER.info("Value of totalQuantity "+ priceBookUtility.getTotalQuantityForPriceAndSide(new BigDecimal(82.1500),MarketSide.BUY));
+        LOGGER.info("Value of vwap " + priceBookUtility.getVwapForQuantityAndSide(5000000L,MarketSide.SELL).setScale(4, BigDecimal.ROUND_HALF_UP));
         priceBookUSDINR.reset();
     }
 }
